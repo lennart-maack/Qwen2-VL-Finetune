@@ -8,18 +8,19 @@ MODEL_NAME="Qwen/Qwen2.5-VL-3B-Instruct"
 
 export PYTHONPATH=src:$PYTHONPATH
 
-GLOBAL_BATCH_SIZE=128
-BATCH_PER_DEVICE=4
-NUM_DEVICES=8
+GLOBAL_BATCH_SIZE=1
+BATCH_PER_DEVICE=1
+NUM_DEVICES=1
 GRAD_ACCUM_STEPS=$((GLOBAL_BATCH_SIZE / (BATCH_PER_DEVICE * NUM_DEVICES)))
 
 # If your dataset is mixed with images and videos, you need to use zero2.
 deepspeed src/train/train_sft.py \
+    --data_path /datax/Maack/surgical_computer_vision/ProstaTD/OwnProstaTD_dataset/all_jsons_combined.json \
+    --image_folder /datax/Maack/surgical_computer_vision/ProstaTD/OwnProstaTD_dataset/videos \
+    --output_dir /datax/Maack/surgical_computer_vision/ProstaTD/OwnProstaTD_dataset/experiments \
     --use_liger True \
     --deepspeed scripts/zero3_offload.json \
     --model_id $MODEL_NAME \
-    --data_path /path/to/your/training/data.json \
-    --image_folder /path/to/your/image/folder \
     --remove_unused_columns False \
     --freeze_vision_tower False \
     --freeze_llm False \
@@ -27,7 +28,6 @@ deepspeed src/train/train_sft.py \
     --bf16 True \
     --fp16 False \
     --disable_flash_attn2 False \
-    --output_dir output/test_train \
     --num_train_epochs 1 \
     --per_device_train_batch_size $BATCH_PER_DEVICE \
     --gradient_accumulation_steps $GRAD_ACCUM_STEPS \
